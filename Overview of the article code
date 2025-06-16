@@ -1,0 +1,51 @@
+In mobile app development, mood management applications gain user favor due to lightweight design and interactive friendliness. This article explores the development logic and implementation highlights of an "Add Mood" page for a mood-tracking application using ArkUI framework.
+
+I. Technology Selection & Project Structure Overview
+
+ArkUI Framework Features
+
+Declarative UI Syntax: Uses @Component and build() methods for intuitive UI structure declaration.
+
+Responsive Layout: Leverages Stack, Column, and Row containers with properties like width('100%') for adaptive layouts.
+
+State Management: Implements two-way binding via @State decorator for real-time UI updates.
+
+Core Data Structures
+Mood records store ID, content, date/time, mood identifiers, and names. Predefined moodIcons array contains visual properties (icons, colors, names) for centralized management and scalability.
+
+II. UI Interaction & Functional Implementation
+
+Main Interface Layout
+
+Title Bar: Features layered typography with contrasting font sizes and subtle shadow effects for visual hierarchy.
+
+Add Button: Prominent red rounded button triggers dialog display through state change.
+
+History List: ForEach renders mood entries with icon badges and truncated content. Swipe-to-delete functionality enhances usability.
+
+Add Mood Dialog
+
+Overlay: Semi-transparent background enables external click dismissal.
+
+Mood Selector: Grid container displays mood icons in responsive 3x2 layout. Visual feedback indicates selection through color/text changes.
+
+Input Area: Multiline text field with placeholder guidance. Action buttons reset state or validate/format data before adding new records.
+
+III. Implementation Highlights
+
+Architecture Principles
+
+Data-view separation via @State-driven UI updates
+
+Logic abstraction through reusable helper functions
+
+Optimization Techniques
+
+Key-based list rendering for performance
+
+Consistent styling with shared design tokens
+
+Time formatting standardization
+
+IV. Conclusion
+The ArkUI implementation delivers a maintainable mood-tracking interface with responsive layouts and intuitive interactions. The component-based architecture enables easy extension (e.g., adding new mood types) while providing foundation for advanced features like data analytics.
