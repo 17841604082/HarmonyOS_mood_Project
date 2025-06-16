@@ -1,0 +1,186 @@
+In mobile app development, mood management applications are favored by users due to their lightweight nature and user-friendly interactions. This article will detail the development logic and implementation highlights of the "Add Mood" page for a mood-tracking app, based on the ArkUI framework.
+
+I. Technology Selection & Project Structure Overview
+
+ArkUI Framework Features
+
+Declarative UI Syntax: Uses @Component and build() methods to declare UI structure. Code directly represents the UI, making it intuitive and maintainable.
+
+Responsive Layout: Utilizes container components like Stack (overlap layout), Column (vertical layout), and Row (horizontal layout), combined with properties like width('100%') and layoutWeight(1) for adaptive layouts.
+
+State Management: Implements two-way data binding via decorators like @State. For example, showAddDialog controls dialog visibility, and newMoodContent syncs input content in real-time.
+
+Core Data Structures
+
+typescript
+// Mood record data structure
+interface Mood {
+  id: number;
+  content: string;
+  date: string;
+  time: string;
+  moodType: string; // Mood type identifier (e.g., 'happy')
+  moodName: string; // Mood name (e.g., 'Happy')
+}
+
+// Predefined mood icon configurations
+moodIcons: Array<MoodIcon> = [
+  { id: 'happy', name: 'Happy', color: '#FFD700', icon: '😊' },
+  // Other mood types...
+]
+The moodIcons array predefines mood types with attributes like icons, colors, and names, enabling centralized management and scalability.
+
+II. UI Interaction & Functional Implementation
+
+Main Interface Layout: Clear Information Hierarchy
+(1) Top Title Bar
+
+typescript
+Column() {
+  Text('Mood Journal')
+    .fontSize(28)
+    .fontWeight(FontWeight.Bold)
+    .fontColor('#FFFFFF')
+  Text('Track your daily emotional state')
+    .fontSize(14)
+    .fontColor('#E0E0E0')
+}
+.backgroundColor('#6A5ACD')
+.padding(10)
+.shadow({ radius: 4, color: '#20000000', offsetY: 2 })
+Visual Highlight: Deep blue background with white text, enhanced by subtle shadow (shadow property) for depth.
+
+Information Layering: Contrast between the main title (28px bold) and subtitle (14px regular) clarifies functionality.
+
+(2) Add Button & History List
+
+typescript
+Button('+ Add Today\'s Mood')
+  .width(200)
+  .height(50)
+  .backgroundColor('#FF6B6B')
+  .borderRadius(25)
+  .onClick(() => this.showAddDialog = true)
+Interaction Design: Prominent red rounded button with icon; click event toggles dialog visibility (showAddDialog state).
+
+typescript
+List() {
+  ForEach(moods, (mood) => {
+    ListItem() {
+      Row() {
+        // Mood icon card
+        Column() {
+          Text(getMoodIcon(mood.moodType))
+            .fontSize(28)
+        }
+        .backgroundColor(getMoodColor(mood.moodType))
+        // Mood details
+        Column() {
+          Row() {
+            Text(mood.moodName)
+              .backgroundColor(getMoodColor(mood.moodType))
+            Text(mood.date)
+              .fontColor('#888888')
+          }
+          Text(mood.content)
+            .maxLines(2)
+            .textOverflow(TextOverflow.Ellipsis)
+          Text(mood.time)
+            .alignSelf(ItemAlign.End)
+        }
+      }
+    }
+    .swipeAction({ end: DeleteButton(mood.id) }) // Swipe-to-delete
+  })
+}
+List Interaction: Renders mood records via ForEach, each containing an icon (colored background), name, date, and truncated content (maxLines(2)).
+
+Operational Convenience: Red delete button appears on swipe (swipeAction), triggering deleteMood to remove the record.
+
+Add Mood Dialog: Immersive Input Experience
+(1) Modal Dialog Structure
+
+typescript
+if (showAddDialog) {
+  Column() {
+    // Dialog content
+  }
+  .backgroundColor('#80000000') // Semi-transparent overlay
+  .justifyContent(FlexAlign.Center)
+}
+Overlay Effect: Semi-transparent black overlay (#80000000). Clicking outside closes the dialog (via onClick resetting showAddDialog).
+
+(2) Mood Selector
+
+typescript
+Grid() {
+  ForEach(moodIcons, (icon) => {
+    GridItem() {
+      Column() {
+        Text(icon.icon)
+          .fontSize(28)
+        Text(icon.name)
+          .fontColor(selectedMoodIcon === icon.id ? '#FFFFFF' : '#333333')
+      }
+      .backgroundColor(selectedMoodIcon === icon.id ? icon.color : '#F0F0F0')
+      .onClick(() => {
+        selectedMoodIcon = icon.id
+        selectedMoodName = icon.name
+      })
+    }
+  })
+  .columnsTemplate('1fr 1fr 1fr') // 3-column layout
+  .rowsTemplate('1fr 1fr') // 2 rows
+  .columnsGap(12)
+  .height(160)
+Interaction Logic: Clicking an icon updates selectedMoodIcon, changing background/text color for visual feedback.
+
+Layout Advantage: Grid container enables responsive icon arrangement across screen sizes.
+
+(3) Text Input & Action Buttons
+
+typescript
+TextInput({ 
+  placeholder: 'Describe your mood...', 
+  text: newMoodContent 
+})
+.onChange((value) => this.newMoodContent = value)
+.height(100)
+.border({ width: 1, color: '#E0E0E0' })
+
+Row() {
+  Button('Cancel')
+    .backgroundColor('#EEEEEE')
+    .onClick(() => {
+      showAddDialog = false
+      newMoodContent = '' // Reset input
+    })
+  Button('Add')
+    .backgroundColor('#6A5ACD')
+    .onClick(() => addMood())
+}
+Input Experience: Multiline text box (height(100)) for mood descriptions, with borders/placeholder for guidance.
+
+State Management: "Add" button triggers addMood() to validate data (non-empty check), format timestamps, and prepend new records to moods array (unshift) for top placement.
+
+III. Code Highlights & Best Practices
+
+Data-View Decoupling
+
+@State enables data-driven view updates (e.g., moods changes automatically refresh the list).
+
+Reusable getMoodIcon() and getMoodColor() methods abstract icon/color logic, avoiding repetition.
+
+Detail Optimization
+
+Timestamp Formatting: Uses padStart(2, '0') for consistent two-digit display (e.g., 09-05).
+
+Performance: ForEach uses key (mood.id.toString()) for efficient list rendering.
+
+Visual Consistency: Uniform styling with borderRadius(8/10/12) and shadow properties.
+
+IV. Summary
+This article implemented a fully functional mood-adding page using ArkUI, covering core concepts like state management, responsive layouts, and interaction design. With well-structured data and component-based development, the page offers extensibility (e.g., adding moods via moodIcons) and strong UX. Future enhancements could include charts or data export features.
+
+V. Previewer Effect
+(Screenshot placeholder)
