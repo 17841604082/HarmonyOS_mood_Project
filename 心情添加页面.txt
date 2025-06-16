@@ -1,0 +1,339 @@
+@Entry
+@Component
+struct MoodApp {
+  @State moods: Array<Mood> = []
+  @State newMoodContent: string = ''
+  @State showAddDialog: boolean = false
+  @State selectedMoodIcon: string = 'neutral'
+  @State selectedMoodName: string = '一般'
+  private nextId: number = 1
+
+  // 可用的心情状态
+  moodIcons: Array<MoodIcon> = [
+    { id: 'happy', name: '开心', color: '#FFD700', icon: '😊' },
+    { id: 'excited', name: '兴奋', color: '#FF6B6B', icon: '🤩' },
+    { id: 'neutral', name: '一般', color: '#4D96FF', icon: '😐' },
+    { id: 'sad', name: '难过', color: '#6BCB77', icon: '😔' },
+    { id: 'angry', name: '生气', color: '#FF8066', icon: '😠' },
+    { id: 'tired', name: '疲惫', color: '#9C51B6', icon: '😩' }
+  ]
+
+  // 添加新心情记录
+  addMood() {
+    if (this.newMoodContent.trim() !== '') {
+      const currentTime = new Date()
+      const formattedDate = `${currentTime.getFullYear()}-${(currentTime.getMonth() + 1).toString().padStart(2, '0')}-${currentTime.getDate().toString().padStart(2, '0')}`
+      const formattedTime = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}`
+
+      this.moods.unshift({
+        id: this.nextId++,
+        content: this.newMoodContent,
+        date: formattedDate,
+        time: formattedTime,
+        moodType: this.selectedMoodIcon,
+        moodName: this.selectedMoodName
+      })
+      this.newMoodContent = ''
+      this.showAddDialog = false
+    }
+  }
+
+  // 删除心情记录
+  deleteMood(id: number) {
+    this.moods = this.moods.filter(mood => mood.id !== id)
+  }
+
+  // 获取心情图标
+  getMoodIcon(moodType: string): string {
+    const mood = this.moodIcons.find(icon => icon.id === moodType)
+    return mood ? mood.icon : '❓'
+  }
+
+  // 获取心情颜色
+  getMoodColor(moodType: string): string {
+    const mood = this.moodIcons.find(icon => icon.id === moodType)
+    return mood ? mood.color : '#CCCCCC'
+  }
+
+  build() {
+    // 使用Stack作为根容器，解决多个根节点问题
+    Stack() {
+      // 主应用内容
+      Column() {
+        // 顶部标题栏
+        Column() {
+          Text('心情记录')
+            .fontSize(28)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#FFFFFF')
+            .margin({ top: 20 })
+
+          Text('记录你的每日心情状态')
+            .fontSize(14)
+            .fontColor('#E0E0E0')
+            .margin({ top: 4, bottom: 16 })
+        }
+        .width('100%')
+        .backgroundColor('#6A5ACD')
+        .alignItems(HorizontalAlign.Center)
+        .padding(10)
+        .shadow({ radius: 4, color: '#20000000', offsetX: 0, offsetY: 2 })
+
+        // 添加心情按钮
+        Button('+ 添加今日心情')
+          .width(200)
+          .height(50)
+          .margin({ top: 20 })
+          .fontSize(18)
+          .fontColor('#FFFFFF')
+          .backgroundColor('#FF6B6B')
+          .borderRadius(25)
+          .onClick(() => {
+            this.showAddDialog = true
+          })
+
+        // 心情记录列表
+        if (this.moods.length > 0) {
+          Text('心情历史记录')
+            .fontSize(20)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#333333')
+            .margin({ top: 30, left: 20, right: 20 })
+            .alignSelf(ItemAlign.Start)
+
+          List({ space: 16 }) {
+            ForEach(this.moods, (mood: Mood) => {
+              ListItem() {
+                // 心情卡片
+                Row() {
+                  // 心情图标
+                  Column() {
+                    Text(this.getMoodIcon(mood.moodType))
+                      .fontSize(28)
+                      .fontWeight(FontWeight.Bold)
+                  }
+                  .width(60)
+                  .height(60)
+                  .justifyContent(FlexAlign.Center)
+                  .alignItems(HorizontalAlign.Center)
+                  .backgroundColor(this.getMoodColor(mood.moodType))
+                  .borderRadius(10)
+                  .margin({ right: 16 })
+
+                  // 心情详情
+                  Column() {
+                    Row() {
+                      Text(mood.moodName)
+                        .fontSize(16)
+                        .fontColor('#FFFFFF')
+                        .backgroundColor(this.getMoodColor(mood.moodType))
+                        .borderRadius(4)
+                        .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+
+                      Blank()
+
+                      Text(mood.date)
+                        .fontSize(14)
+                        .fontColor('#888888')
+                    }
+                    .width('100%')
+                    .margin({ bottom: 8 })
+
+                    Text(mood.content)
+                      .fontSize(16)
+                      .fontColor('#333333')
+                      .maxLines(2)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      .margin({ bottom: 8 })
+
+                    Text(mood.time)
+                      .fontSize(12)
+                      .fontColor('#888888')
+                      .alignSelf(ItemAlign.End)
+                  }
+                  .layoutWeight(1)
+                }
+                .padding(16)
+                .borderRadius(12)
+                .backgroundColor('#FFFFFF')
+                .width('100%')
+                .shadow({ radius: 2, color: '#10000000', offsetX: 0, offsetY: 1 })
+              }
+              .swipeAction({ end: this.DeleteButton(mood.id) })
+            }, (mood: Mood) => mood.id.toString())
+          }
+          .width('100%')
+          .layoutWeight(1)
+          .padding({ left: 16, right: 16, top: 10 })
+          .margin({ top: 10 })
+        } else {
+          // 空状态提示
+          Column() {
+            // Image($r('app.media.tried'))
+            //   .width(120)
+            //   .height(120)
+            //   .margin({ bottom: 20 })
+            Text('暂无心情记录')
+              .fontSize(18)
+              .fontColor('#666666')
+              .margin({ bottom: 8 })
+            Text('点击上方按钮添加你的今日心情')
+              .fontSize(14)
+              .fontColor('#999999')
+          }
+          .width('100%')
+          .height('100%')
+          .justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.Center)
+        }
+      }
+      .width('100%')
+      .height('100%')
+      .backgroundColor('#F5F7FA')
+
+      // 添加心情对话框 - 放在Stack中作为覆盖层
+      if (this.showAddDialog) {
+        Column() {
+          Column() {
+            Text('添加今日心情')
+              .fontSize(22)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#333333')
+              .margin({ bottom: 16 })
+
+            // 心情状态选择
+            Text('选择心情状态')
+              .fontSize(16)
+              .fontColor('#666666')
+              .margin({ bottom: 10 })
+              .alignSelf(ItemAlign.Start)
+
+            // 心情图标选择器
+            Grid() {
+              ForEach(this.moodIcons, (icon: MoodIcon) => {
+                GridItem() {
+                  Column() {
+                    Text(icon.icon)
+                      .fontSize(28)
+                      .margin({ bottom: 5 })
+                    Text(icon.name)
+                      .fontSize(12)
+                      .fontColor(this.selectedMoodIcon === icon.id ? '#FFFFFF' : '#333333')
+                  }
+                  .padding(10)
+                  .borderRadius(10)
+                  .backgroundColor(this.selectedMoodIcon === icon.id ? icon.color : '#F0F0F0')
+                  .onClick(() => {
+                    this.selectedMoodIcon = icon.id
+                    this.selectedMoodName = icon.name
+                  })
+                }
+              })
+            }
+            .columnsTemplate('1fr 1fr 1fr')
+            .rowsTemplate('1fr 1fr')
+            .columnsGap(12)
+            .rowsGap(12)
+            .margin({ bottom: 20 })
+            .height(160)
+
+            // 心情描述输入
+            Text('心情描述')
+              .fontSize(16)
+              .fontColor('#666666')
+              .margin({ bottom: 10 })
+              .alignSelf(ItemAlign.Start)
+
+            TextInput({ placeholder: '描述你的心情...', text: this.newMoodContent })
+              .onChange((value: string) => {
+                this.newMoodContent = value
+              })
+              .height(100)
+              .width('100%')
+              .padding(10)
+              .backgroundColor('#FFFFFF')
+              .borderRadius(8)
+              .border({ width: 1, color: '#E0E0E0' })
+
+            // 操作按钮
+            Row() {
+              Button('取消')
+                .width(120)
+                .height(40)
+                .fontSize(16)
+                .fontColor('#666666')
+                .backgroundColor('#EEEEEE')
+                .borderRadius(20)
+                .onClick(() => {
+                  this.showAddDialog = false
+                  this.newMoodContent = ''
+                })
+
+              Button('添加')
+                .width(120)
+                .height(40)
+                .fontSize(16)
+                .fontColor('#FFFFFF')
+                .backgroundColor('#6A5ACD')
+                .borderRadius(20)
+                .onClick(() => {
+                  this.addMood()
+                })
+            }
+            .margin({ top: 20 })
+            .justifyContent(FlexAlign.SpaceBetween)
+            .width('100%')
+          }
+          .padding(24)
+          .width('90%')
+          // .maxWidth(400)
+          .backgroundColor('#FFFFFF')
+          .borderRadius(16)
+        }
+        .width('100%')
+        .height('100%')
+        .backgroundColor('#80000000')
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+        .onClick(() => {
+          this.showAddDialog = false
+        })
+      }
+    }
+    .width('100%')
+    .height('100%')
+  }
+
+  // 删除按钮组件
+  @Builder DeleteButton(id: number) {
+    Button() {
+      Image($r('app.media.startIcon'))
+        .width(20)
+        .height(20)
+    }
+    .width(60)
+    .height('100%')
+    .backgroundColor('#FF5252')
+    .borderRadius(12)
+    .onClick(() => {
+      this.deleteMood(id)
+    })
+  }
+}
+
+// 心情数据结构
+interface Mood {
+  id: number;
+  content: string;
+  date: string;
+  time: string;
+  moodType: string;
+  moodName: string;
+}
+
+interface MoodIcon {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
+}
